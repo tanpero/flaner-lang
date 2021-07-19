@@ -18,9 +18,6 @@
     <ClCompile Include="src\lexer\context.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\lexer\io.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\lexer\lexer.cc">
       <Filter>源文件</Filter>
     </ClCompile>

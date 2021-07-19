@@ -142,7 +142,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\lexer\context.cc" />
-    <ClCompile Include="src\lexer\io.cc" />
     <ClCompile Include="src\lexer\lexer.cc" />
   </ItemGroup>
   <ItemGroup>

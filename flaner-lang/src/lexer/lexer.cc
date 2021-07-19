@@ -1,5 +1,6 @@
-#include <lexer/lexer.hh>
+#include <lexer.hh>
 #include <cassert>
+
 namespace flaner
 {
 namespace lexer
