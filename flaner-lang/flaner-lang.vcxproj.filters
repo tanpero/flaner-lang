@@ -15,8 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="flaner-lang.cpp">
+    <ClCompile Include="src\lexer\context.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\lexer\io.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lexer\lexer.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\context.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\io.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lexer.hh">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

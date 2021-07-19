@@ -88,6 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,7 +140,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="flaner-lang.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\lexer\context.cc" />
+    <ClCompile Include="src\lexer\io.cc" />
+    <ClCompile Include="src\lexer\lexer.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\context.hh" />
+    <ClInclude Include="include\io.hh" />
+    <ClInclude Include="include\lexer.hh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
