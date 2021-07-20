@@ -16,21 +16,27 @@ namespace lexer
         {
 
         }
+
+        Context(std::wstreambuf* buf)
+            : source(buf),
+            lineOffset(0), charOffset(0)
+        {
+
+        }
+
         Context(const Context& c)
             : source(c.source),
             lineOffset(c.lineOffset), charOffset(c.charOffset)
         {
 
         }
-        Context()
-            : source(),
-            lineOffset(0), charOffset(0)
-        {
 
-        }
+
         ~Context() {}
 
     public:
+
+        // offset 为 1 时获取当前字符
         char getNextchar(size_t offset);
         char lookNextchar(size_t offset);
         char getLastchar();

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
-//#include <filesystem>
 
 namespace flaner
 {
@@ -43,13 +42,14 @@ namespace io
         {
 
         }
-        Source()
+        Source(std::wstreambuf* buf, Encoding encoding = Encoding::UTF_8)
             : path(""),
             encoding(Encoding::UTF_8),
             openMode(OpenMode::Interactive)
         {
-            std::wcin.rdbuf(object.rdbuf());
+            object << buf;
         }
+
         ~Source()
         {
             if (openMode == OpenMode::Interactive)
@@ -59,12 +59,11 @@ namespace io
             object.close();
         }
     public:
-        /*std::filesystem::path*/std::string path;
+        std::string path;
         Encoding encoding;
         OpenMode openMode;
 
-        std::basic_fstream<wchar_t> object;
-        std::basic_string_view<wchar_t> data;
+        std::basic_fstream<char> object;
     };
 }
 }

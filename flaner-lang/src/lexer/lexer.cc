@@ -76,11 +76,11 @@ namespace lexer
                 return context.lookNextchar(offset) == s;
             };
 
-            if (iswdigit(ch))
+            if (isdigit(ch))
             {
                 std::string s{ ch };
                 char nextchar = context.lookNextchar(1);
-                while (iswdigit(nextchar))
+                while (isdigit(nextchar))
                 {
                     ch = next();
                     nextchar = context.lookNextchar(1);
@@ -88,11 +88,11 @@ namespace lexer
                 }
                 push(TokenType::NUMBER, s);
             }      
-            else if (iswalpha(ch) || ch == L'_' || ch == L'$')
+            else if (isalpha(ch) || ch == L'_' || ch == L'$')
             {
                 std::string word{ ch };
                 char nextchar = context.lookNextchar(1);
-                while (iswalnum(nextchar) || ch == L'_' || ch == L'$')
+                while (isalnum(nextchar) || ch == L'_' || ch == L'$')
                 {
                     ch = next();
                     nextchar = context.lookNextchar(1);
@@ -106,6 +106,14 @@ namespace lexer
                 {
                     push(getKeywordOrID(word), word);
                 }
+            }
+            else if (match('\''))
+            {
+                push(TokenType::STRING, getString('\''));
+            }
+            else if (match('"'))
+            {
+                push(TokenType::STRING, getString('"'));
             }
             else if (match('+'))
             {
@@ -351,6 +359,10 @@ namespace lexer
             {
                 push(TokenType::OP_COLON, ":");
             }
+            else if (match(','))
+            {
+                push(TokenType::OP_COMMA, ",");
+            }
             else if (match('?'))
             {
                 push(TokenType::OP_QUESTION, "?");
@@ -370,6 +382,57 @@ namespace lexer
                     push(TokenType::UNKNOWN, { ch });
                 }
             }
+        }
+    }
+
+    std::string Lexer::getString(char mark)
+    {
+        std::string s{};
+        char ch = context.getNextchar(1);
+        while (true)
+        {            
+            if (ch == mark)
+            {
+                if (context.lookLastchar() != '\\')
+                {
+                    return s;
+                }
+            }
+            else
+            {
+                if (ch == '\\')
+                {
+                    ch = context.getNextchar(1);
+                    char m = 0;
+
+                    // TODO: 对真·换行符的处理
+                    switch (ch)
+                    {
+                    case 'b': m = '\x08'; break;
+                    case 't': m = '\x09'; break;
+                    case 'n': m = '\x0a'; break;
+                    case 'v': m = '\x0b'; break;
+                    case 'f': m = '\x0c'; break;
+                    case 'r': m = '\x0d'; break;
+                    case '\'': m = '\x27'; break;
+                    case '"': m = '\x22'; break;
+                    case '\\': m = '\x5c'; break;
+                    case '\n': case '\r': ch = context.getNextchar(1); break;
+                    default:
+                        m = ch; break;
+                    }
+                    s += m;
+                }
+                else if (ch == '\r' || ch == '\n')
+                {
+                    error("Invalid or unexpected token");
+                }
+                else
+                {
+                   s += ch;
+                }
+            }
+            ch = context.getNextchar(1);
         }
     }
     std::vector<Lexer::Token> Lexer::getSequence()
@@ -405,7 +468,6 @@ namespace lexer
     }
     Lexer::Token Lexer::now()
     {
-        std::cout << "\nHello!";
         assert(sequence.size());
         return sequence.at(0);
     }
