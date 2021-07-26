@@ -1,0 +1,11 @@
+let s1 = `Hello world`
+let s2 = `Say: "${s1}"`
+let s3 = `Hello ${ "wor" + "ld" }`
+let s4 = `Today is ${ Date.today() + `, a happy ${ "Day" + "!"}` }`
+print(`
+${s1}
+${s2}
+${s3}
+${s4}
+`)
+

@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <functional>
 
 namespace flaner
 {
@@ -275,7 +276,11 @@ namespace flaner
 
 			void process();
 			std::string getNumber();
+			inline char getEscapeCharacter();
 			std::string getString(char mark);
+			void processTemplateString(std::function<void(TokenType, std::string)>);
+			unsigned int levelOfTemplateNesting;
+			unsigned int levelOfParanthesesNestingInTemplateInnerEvaluation;
 
 		public:
 			bool isBlank(char ch);

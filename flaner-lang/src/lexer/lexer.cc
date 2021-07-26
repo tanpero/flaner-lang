@@ -103,10 +103,38 @@ namespace lexer
         return n;
     }
 
+    inline char Lexer::getEscapeCharacter()
+    {
+        char ch = context.getNextchar();
+        char m = 0;
+
+        // TODO: 对真·换行符的处理
+        switch (ch)
+        {
+        case 'b': m = '\x08'; break;
+        case 't': m = '\x09'; break;
+        case 'n': m = '\x0a'; break;
+        case 'v': m = '\x0b'; break;
+        case 'f': m = '\x0c'; break;
+        case 'r': m = '\x0d'; break;
+        case '\'': m = '\x27'; break;
+        case '"': m = '\x22'; break;
+        case '\\': m = '\x5c'; break;
+
+            // 处理被转义的 \r\n
+        case '\r': ch = context.getNextchar();
+        case '\n': ch = context.getNextchar(); break;
+        default:
+            m = ch; break;
+        }
+        return m;
+    }
+
     std::string Lexer::getString(char mark)
     {
         std::string s{};
         char ch = context.getNextchar();
+
         while (true)
         {
             if (ch == mark)
@@ -115,41 +143,71 @@ namespace lexer
                 {
                     return s;
                 }
+                s += ch;
             }
             else
             {
                 if (ch == '\\')
                 {
-                    ch = context.getNextchar();
-                    char m = 0;
-
-                    // TODO: 对真·换行符的处理
-                    switch (ch)
-                    {
-                    case 'b': m = '\x08'; break;
-                    case 't': m = '\x09'; break;
-                    case 'n': m = '\x0a'; break;
-                    case 'v': m = '\x0b'; break;
-                    case 'f': m = '\x0c'; break;
-                    case 'r': m = '\x0d'; break;
-                    case '\'': m = '\x27'; break;
-                    case '"': m = '\x22'; break;
-                    case '\\': m = '\x5c'; break;
-                    case '\n': case '\r': ch = context.getNextchar(); break;
-                    default:
-                        m = ch; break;
-                    }
-                    s += m;
+                    s += getEscapeCharacter();
                 }
                 else if (ch == '\r' || ch == '\n')
                 {
-                    error("Invalid or unexpected token");
+                   error("Invalid or unexpected token");
                 }
                 else
                 {
                     s += ch;
                 }
             }
+            ch = context.getNextchar();
+        }
+    }
+
+    void Lexer::processTemplateString(std::function<void(TokenType, std::string)> push)
+    {
+        if (context.getLastchar() == '}')
+        {
+            push(TokenType::OP_PAREN_END, ")");
+            push(TokenType::OP_ADD, "+");
+            levelOfTemplateNesting -= 1;
+        }
+
+        char ch = context.getNextchar();
+        std::string s{};
+
+        while (true)
+        {
+            if (ch == '\\')
+            {
+                s += getEscapeCharacter();
+            }
+            else if (ch == '$')
+            {
+                ch = context.getNextchar();
+                if (ch == '{')
+                {
+                    push(TokenType::STRING, s);
+                    push(TokenType::OP_ADD, "+");
+                    push(TokenType::OP_PAREN_BEGIN, "(");
+                    levelOfTemplateNesting += 1;
+                    return;
+                }
+                else
+                {
+                    s += ch;
+                }
+            }
+            else if (ch == '`')
+            {
+                push(TokenType::STRING, s);
+                return;
+            }
+            else
+            {
+                s += ch;
+            }
+
             ch = context.getNextchar();
         }
     }
@@ -173,6 +231,9 @@ namespace lexer
         auto lastToken = [&]() {
             return sequence.at(sequence.size() - 1);
         };
+
+        levelOfTemplateNesting = 0;
+        levelOfParanthesesNestingInTemplateInnerEvaluation = 0;
 
         while (!context.isEnd())
         {
@@ -220,6 +281,10 @@ namespace lexer
             else if (match('"'))
             {
                 push(TokenType::STRING, getString('"'));
+            }
+            else if (match('`'))
+            {
+                processTemplateString(push);
             }
             else if (match('+'))
             {
@@ -438,11 +503,26 @@ namespace lexer
             }
             else if (match('{'))
             {
+                if (levelOfTemplateNesting > 0)
+                {
+                    levelOfParanthesesNestingInTemplateInnerEvaluation += 1;
+                }
                 push(TokenType::OP_BRACE_BEGIN, "{");
             }
             else if (match('}'))
             {
-                push(TokenType::OP_BRACE_END, "}");
+                if (levelOfParanthesesNestingInTemplateInnerEvaluation > 0)
+                {
+                    levelOfParanthesesNestingInTemplateInnerEvaluation -= 1;
+                }
+                if (levelOfParanthesesNestingInTemplateInnerEvaluation == 0)
+                {
+                    processTemplateString(push);
+                }
+                else
+                {
+                    push(TokenType::OP_BRACE_END, "}");
+                }
             }
             else if (match('.'))
             {
@@ -489,6 +569,8 @@ namespace lexer
                 }
             }
         }
+
+        levelOfTemplateNesting = 0;
     }
 
     std::vector<Lexer::Token> Lexer::getSequence()
