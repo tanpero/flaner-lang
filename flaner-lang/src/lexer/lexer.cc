@@ -40,6 +40,120 @@ namespace lexer
         return type;
     }
 
+    std::string Lexer::getNumber()
+    {
+        std::string n{};
+        char ch = context.getLastchar();
+        char state = 1;
+        do
+        {
+            switch (ch)
+            {
+            case 'e':
+            {
+                if (state != 2 && state != 14)
+                {
+                    return n;
+                }
+                state = 9;
+                n += 'e';
+                break;
+            }
+            case '.':
+            {
+                if (state >> 2)
+                {
+                    return n;
+                }
+                state = 12;
+                n += '.';
+                break;
+            }
+            case '+':
+            case '-':
+            {
+                if (!(state & 1))
+                {
+                    return n;
+                }
+                n += ch;
+                break;
+            }
+            default:
+                if (ch >= '0' && ch <= '9')
+                {
+                    if (state >> 2 == 1)
+                    {
+                        return n;
+                    }
+                    state = state & 8 ? 14 : ((state >> 1 & 2) + 2);
+                    n += ch;
+                }
+                else
+                {
+                    return n;
+                }
+                break;
+            }
+
+            ch = context.getNextchar();
+
+        } while (true);
+
+        return n;
+    }
+
+    std::string Lexer::getString(char mark)
+    {
+        std::string s{};
+        char ch = context.getNextchar();
+        while (true)
+        {
+            if (ch == mark)
+            {
+                if (context.lookLastchar() != '\\')
+                {
+                    return s;
+                }
+            }
+            else
+            {
+                if (ch == '\\')
+                {
+                    ch = context.getNextchar();
+                    char m = 0;
+
+                    // TODO: 对真·换行符的处理
+                    switch (ch)
+                    {
+                    case 'b': m = '\x08'; break;
+                    case 't': m = '\x09'; break;
+                    case 'n': m = '\x0a'; break;
+                    case 'v': m = '\x0b'; break;
+                    case 'f': m = '\x0c'; break;
+                    case 'r': m = '\x0d'; break;
+                    case '\'': m = '\x27'; break;
+                    case '"': m = '\x22'; break;
+                    case '\\': m = '\x5c'; break;
+                    case '\n': case '\r': ch = context.getNextchar(); break;
+                    default:
+                        m = ch; break;
+                    }
+                    s += m;
+                }
+                else if (ch == '\r' || ch == '\n')
+                {
+                    error("Invalid or unexpected token");
+                }
+                else
+                {
+                    s += ch;
+                }
+            }
+            ch = context.getNextchar();
+        }
+    }
+
     void Lexer::process()
     {
         auto push = [&](TokenType t, std::string v) {
@@ -76,17 +190,9 @@ namespace lexer
                 return context.lookNextchar(offset) == s;
             };
 
-            if (isdigit(ch))
+            if (isdigit(ch) || (ch == '.' && isdigit(context.lookNextchar())))
             {
-                std::string s{ ch };
-                char nextchar = context.lookNextchar(1);
-                while (isdigit(nextchar))
-                {
-                    ch = next();
-                    nextchar = context.lookNextchar(1);
-                    s += ch;
-                }
-                push(TokenType::NUMBER, s);
+                push(TokenType::NUMBER, getNumber());
             }      
             else if (isalpha(ch) || ch == L'_' || ch == L'$')
             {
@@ -385,60 +491,11 @@ namespace lexer
         }
     }
 
-    std::string Lexer::getString(char mark)
-    {
-        std::string s{};
-        char ch = context.getNextchar(1);
-        while (true)
-        {            
-            if (ch == mark)
-            {
-                if (context.lookLastchar() != '\\')
-                {
-                    return s;
-                }
-            }
-            else
-            {
-                if (ch == '\\')
-                {
-                    ch = context.getNextchar(1);
-                    char m = 0;
-
-                    // TODO: 对真·换行符的处理
-                    switch (ch)
-                    {
-                    case 'b': m = '\x08'; break;
-                    case 't': m = '\x09'; break;
-                    case 'n': m = '\x0a'; break;
-                    case 'v': m = '\x0b'; break;
-                    case 'f': m = '\x0c'; break;
-                    case 'r': m = '\x0d'; break;
-                    case '\'': m = '\x27'; break;
-                    case '"': m = '\x22'; break;
-                    case '\\': m = '\x5c'; break;
-                    case '\n': case '\r': ch = context.getNextchar(1); break;
-                    default:
-                        m = ch; break;
-                    }
-                    s += m;
-                }
-                else if (ch == '\r' || ch == '\n')
-                {
-                    error("Invalid or unexpected token");
-                }
-                else
-                {
-                   s += ch;
-                }
-            }
-            ch = context.getNextchar(1);
-        }
-    }
     std::vector<Lexer::Token> Lexer::getSequence()
     {
         return std::move(sequence);
     }
+
     Lexer::Token Lexer::forwards(size_t n)
     {
         auto offset = location + n;

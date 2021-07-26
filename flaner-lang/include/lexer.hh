@@ -274,6 +274,7 @@ namespace flaner
 			};
 
 			void process();
+			std::string getNumber();
 			std::string getString(char mark);
 
 		public:

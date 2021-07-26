@@ -1,5 +1,4 @@
-let a = "Hello"
-let b = "world\n"
-let s = a + " " + b
-print(s)
+let a = 123e+456
+let b = "Hello\nworld"
+print(a + " " + b)
 

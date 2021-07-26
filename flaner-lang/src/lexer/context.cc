@@ -3,7 +3,12 @@
 namespace flaner
 {
     namespace lexer
-    {        
+    {
+        char Context::thischar()
+        {
+            return source.object.peek();
+        }
+
         char Context::getNextchar(size_t offset)
         {
             if (offset == 1)
@@ -33,12 +38,12 @@ namespace flaner
         char Context::getLastchar()
         {
             source.object.unget();
-            return getNextchar(1);
+            return getNextchar();
         }
         char Context::lookLastchar()
         {
             char ch = getLastchar();
-            getNextchar(1);
+            getNextchar();
             return ch;
         }
         bool Context::isEnd()

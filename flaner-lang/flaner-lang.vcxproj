@@ -140,7 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cc" />
     <ClCompile Include="src\lexer\context.cc" />
     <ClCompile Include="src\lexer\lexer.cc" />
   </ItemGroup>

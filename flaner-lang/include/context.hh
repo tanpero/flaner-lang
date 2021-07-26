@@ -36,9 +36,9 @@ namespace lexer
 
     public:
 
-        // offset 为 1 时获取当前字符
-        char getNextchar(size_t offset);
-        char lookNextchar(size_t offset);
+        char thischar();
+        char getNextchar(size_t offset = 1);
+        char lookNextchar(size_t offset = 1);
         char getLastchar();
         char lookLastchar();
         bool isEnd();
