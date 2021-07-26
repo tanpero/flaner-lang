@@ -1,0 +1,5 @@
+let a = "Hello"
+let b = "world\n"
+let s = a + " " + b
+print(s)
+
